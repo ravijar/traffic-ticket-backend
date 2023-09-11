@@ -1,20 +1,12 @@
 from django.db import models
-
-# Create your models here.
-
-#done
-class SuperAdmin(models.Model):
-    user_id = models.CharField(max_length=12, primary_key=True)
-    password = models.CharField(max_length=128) 
-    recovery_email = models.EmailField(max_length=50)
+from django.contrib.auth.models import User
 
 #done
 class Admin(models.Model):
-    user_id = models.CharField(max_length=12, primary_key=True)
-    password = models.CharField(max_length=128)  
+    # user_id = models.CharField(max_length=12, primary_key=True)
+    # password = models.CharField(max_length=128)  
     police_station = models.CharField(max_length=20)
-
-
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
 #done
 class Vehicle(models.Model):
@@ -25,13 +17,10 @@ class Vehicle(models.Model):
     color = models.CharField(max_length=10)
     license_expiry_date = models.DateField()
 
-
 #done
 class VehicleOwner(models.Model):
     vehicle_number = models.OneToOneField('Vehicle', primary_key=True, on_delete=models.CASCADE)
     nic = models.ForeignKey('Driver', on_delete=models.CASCADE)
-
-
 
 #done
 class Fine(models.Model):
@@ -46,17 +35,12 @@ class Fine(models.Model):
     due_date = models.DateField()
     payment_status = models.BooleanField()
 
-
-
-
 #driver
 class Driver(models.Model):
     nic = models.OneToOneField('Person', primary_key=True, on_delete=models.CASCADE)
-    password = models.CharField(max_length=128)  
+    # password = models.CharField(max_length=128)  
     license_id = models.CharField(max_length=8)
-
-
-
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
 #done
 class Person(models.Model):
@@ -65,8 +49,6 @@ class Person(models.Model):
     last_name = models.CharField(max_length=50)
     telephone = models.CharField(max_length=10)
     address = models.CharField(max_length=200)
-
-    
 
 #done
 class Accident(models.Model):
@@ -90,9 +72,9 @@ class Message(models.Model):
 #done
 class PoliceOfficer(models.Model):
     nic = models.OneToOneField('Person', primary_key=True, on_delete=models.CASCADE)
-    password = models.CharField(max_length=128)  
+    # password = models.CharField(max_length=128)  
     police_station = models.CharField(max_length=20)
-
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
 
 #done
