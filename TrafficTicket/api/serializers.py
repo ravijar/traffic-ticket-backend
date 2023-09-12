@@ -54,7 +54,7 @@ class VehicleSerializer(serializers.ModelSerializer):
 class FineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Fine
-        fields = '__all__'
+        fields = ["fine_id", "vehicle", "date", "time", "location","violation"]
 
 
 class ViolationTypeSerializer(serializers.ModelSerializer):
