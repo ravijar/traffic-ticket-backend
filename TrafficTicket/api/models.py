@@ -47,8 +47,8 @@ class Person(models.Model):
     nic = models.CharField(max_length=12, primary_key=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    telephone = models.CharField(max_length=10)
-    address = models.CharField(max_length=200)
+    telephone = models.CharField(max_length=10, null=True)
+    address = models.CharField(max_length=200, null=True)
 
 #done
 class Accident(models.Model):
@@ -97,3 +97,7 @@ class Violation(models.Model):
     license_plate_image = models.BinaryField()
     detected_license_plate = models.CharField(max_length=7)
 
+
+class Suggestion(models.Model):
+    id = models.AutoField(primary_key=True)
+    suggestion = models.CharField(max_length=5000)
