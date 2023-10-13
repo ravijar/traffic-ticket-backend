@@ -18,7 +18,8 @@ from django.urls import path,include
 from rest_framework import routers
 from api import views
 from rest_framework_simplejwt.views import (
-    TokenRefreshView
+    TokenRefreshView,
+    TokenObtainPairView
 )
 
 router = routers.DefaultRouter()
@@ -29,11 +30,11 @@ router.register(r"persons", views.PersonViewSet)
 router.register(r"drivers", views.DriverViewSet)
 router.register(r"vehicleowners", views.VehicleOwnerViewSet)
 router.register(r"vehicles", views.VehicleViewSet)
-router.register(r"fines", views.FineViewSet)
 router.register(r"accidents", views.AccidentViewSet)
 router.register(r"messages", views.MessageViewSet)
 router.register(r"policeofficers", views.PoliceOfficerViewSet)
 router.register(r"violations", views.ViolationViewSet)
+router.register(r"suggestions", views.SuggestionViewSet)
 
 
 
@@ -41,6 +42,7 @@ router.register(r"violations", views.ViolationViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/',include(router.urls)),
+    path('api/fines/', views.FineList.as_view(), name='fine-list'),
     path("api/rest-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path('api/token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh')
