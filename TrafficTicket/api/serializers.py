@@ -11,7 +11,8 @@ from api.models import (
     Accident,
     Message,
     PoliceOfficer,
-    Violation
+    Violation,
+    Suggestion
 )
 
 
@@ -54,7 +55,7 @@ class VehicleSerializer(serializers.ModelSerializer):
 class FineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Fine
-        fields = ["fine_id", "vehicle", "date", "time", "location","violation"]
+        fields = '__all__'
 
 
 class ViolationTypeSerializer(serializers.ModelSerializer):
@@ -86,7 +87,22 @@ class ViolationSerializer(serializers.ModelSerializer):
         model = Violation
         fields = '__all__'
 
+# new
+class SuggestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Suggestion
+        fields = '__all__'
 
+class FineWithViolationAmountSerializer(serializers.ModelSerializer):
+    # Create a read-only field to get the amount from ViolationType
+    violation_amount = serializers.DecimalField(max_digits=10, decimal_places=2, source='violation.fine_amount', read_only=True)
+    fine_id = serializers.IntegerField(label='ID')
+    class Meta:
+        model = Fine
+        # Specify the fields you want to include in the response
+        fields = ('fine_id', 'vehicle', 'date', 'time', 'violation_amount')
+
+# new
 
 
 
