@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-z&b(-2ht$m25j+np%j%zh4o^20!%sc(!=!9gt#jhfx=c!xa_*h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*.ngrok.io', '6440-2401-dd00-10-20-4bb-9846-df31-8a0e.ngrok.io', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -128,15 +128,22 @@ WSGI_APPLICATION = 'TrafficTicket.wsgi.application'
 
     
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'PASSWORD': '12345678',
+#         'HOST': 'trafficticket.cprfebkd2fkc.eu-north-1.rds.amazonaws.com',
+#         'PORT': '5432'
+        
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': '12345678',
-        'HOST': 'trafficticket.cprfebkd2fkc.eu-north-1.rds.amazonaws.com',
-        'PORT': '5432'
-        
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3',
     }
 }
 
@@ -193,7 +200,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
-        # "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
     "PAGE_SIZE": 100,
