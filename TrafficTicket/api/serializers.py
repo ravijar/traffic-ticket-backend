@@ -109,5 +109,15 @@ class FineWithViolationAmountSerializer(serializers.ModelSerializer):
         fields = ('fine_id', 'vehicle', 'date', 'time', 'violation_amount')
 
 
+class scheduledOfficersSerializer(serializers.ModelSerializer):
+    officer_id = serializers.CharField(source='officer.officer_id')
+    telephone = serializers.CharField(source='officer.nic.telephone')
+    full_name = serializers.SerializerMethodField()
 
+    def get_full_name(self, obj):
+        return f"{obj.officer.nic.first_name} {obj.officer.nic.last_name}"
 
+    class Meta:
+        model = Schedule
+        fields = ['location','shift','officer_id','full_name','telephone']
+        

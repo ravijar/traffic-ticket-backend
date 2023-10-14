@@ -18,11 +18,12 @@ from api.models import (
     Suggestion,
     Schedule
 )
-from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer)
+from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer, scheduledOfficersSerializer)
 from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Count
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -300,4 +301,12 @@ class ScheduleViewSet(viewsets.ModelViewSet):
 class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
     serializer_class = FineWithViolationAmountSerializer
+ 
 
+class ScheduledOfficerList(generics.ListAPIView):
+    serializer_class = scheduledOfficersSerializer
+
+    def get_queryset(self):
+        date = self.kwargs.get('date')  # Retrieve the date from the URL
+        queryset = Schedule.objects.filter(date=date)
+        return queryset
