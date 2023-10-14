@@ -15,9 +15,10 @@ from api.models import (
     Message,
     PoliceOfficer,
     Violation,
-    Suggestion
+    Suggestion,
+    Schedule
 )
-from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer)
+from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer)
 from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -263,8 +264,40 @@ class SuggestionViewSet(viewsets.ModelViewSet):
     serializer_class = SuggestionSerializer
     permission_classes = [permissions.AllowAny]
 
+class ScheduleViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = Schedule.objects.all()
+    serializer_class = ScheduleSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=["post"])
+    def create_schedule(self, request):
+        """Create a new schedule.
+            api [POST] /api/schedules/create_schedule/]
+            required ['officer_id', 'location', 'shift', 'date']]"""
+        print("create schedule")
+        print(request.data["date"])
+
+        try:
+            officer = PoliceOfficer.objects.get(officer_id=request.data["officer_id"])
+        except:
+            return Response(
+                {"error": "Officer not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        schedule = Schedule.objects.create(
+            officer = officer,
+            location = request.data["location"],
+            shift = request.data["shift"],
+            date = request.data["date"],
+        )
+        schedule.save()
+        return Response({"status": "schedule created"}, status=status.HTTP_201_CREATED)
+
 class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
     serializer_class = FineWithViolationAmountSerializer
 
-# new

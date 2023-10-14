@@ -12,7 +12,8 @@ from api.models import (
     Message,
     PoliceOfficer,
     Violation,
-    Suggestion
+    Suggestion,
+    Schedule
 )
 
 
@@ -87,6 +88,11 @@ class ViolationSerializer(serializers.ModelSerializer):
         model = Violation
         fields = '__all__'
 
+class ScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Schedule
+        fields = '__all__'
+
 # new
 class SuggestionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -102,7 +108,6 @@ class FineWithViolationAmountSerializer(serializers.ModelSerializer):
         # Specify the fields you want to include in the response
         fields = ('fine_id', 'vehicle', 'date', 'time', 'violation_amount')
 
-# new
 
 
 

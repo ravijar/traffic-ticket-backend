@@ -102,3 +102,11 @@ class Violation(models.Model):
 class Suggestion(models.Model):
     id = models.AutoField(primary_key=True)
     suggestion = models.CharField(max_length=5000)
+
+
+class Schedule(models.Model):
+    id = models.AutoField(primary_key=True)
+    officer = models.ForeignKey('PoliceOfficer', on_delete=models.CASCADE)
+    location = models.CharField(max_length=50)
+    shift = models.CharField(max_length=5)
+    date = models.DateField()
