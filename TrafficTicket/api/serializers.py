@@ -78,9 +78,15 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class PoliceOfficerSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    telephone = serializers.CharField(source='nic.telephone')
+
+    def get_full_name(self, obj):
+        return f"{obj.nic.first_name} {obj.nic.last_name}"
+
     class Meta:
         model = PoliceOfficer
-        fields = '__all__'
+        fields = ['officer_id','full_name','nic','police_station','telephone']
 
 
 class ViolationSerializer(serializers.ModelSerializer):
@@ -121,3 +127,15 @@ class scheduledOfficersSerializer(serializers.ModelSerializer):
         model = Schedule
         fields = ['location','shift','officer_id','full_name','telephone']
         
+class DriverDetailsSerializer(serializers.ModelSerializer):
+    nic = serializers.CharField(source='nic.nic.nic')
+    full_name = serializers.SerializerMethodField()
+    telephone = serializers.CharField(source='nic.nic.telephone')
+    vehicle_number = serializers.CharField(source='vehicle_number.vehicle_number')
+
+    def get_full_name(self, obj):
+        return f"{obj.nic.nic.first_name} {obj.nic.nic.last_name}"
+    
+    class Meta:
+        model = VehicleOwner
+        fields = ['nic','full_name','vehicle_number','telephone']
