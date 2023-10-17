@@ -18,7 +18,7 @@ from api.models import (
     Suggestion,
     Schedule
 )
-from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer, scheduledOfficersSerializer,DriverDetailsSerializer)
+from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer, scheduledOfficersSerializer,DriverDetailsSerializer,OfficerDetailsSerializer)
 from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -191,7 +191,6 @@ class VehicleOwnerViewSet(viewsets.ModelViewSet):
     """
 
     queryset = VehicleOwner.objects.all()
-    #serializer_class = VehicleOwnerSerializer
     permission_classes = [permissions.AllowAny]
 
     def get_serializer_class(self):
@@ -246,8 +245,12 @@ class PoliceOfficerViewSet(viewsets.ModelViewSet):
     """
 
     queryset = PoliceOfficer.objects.all()
-    serializer_class = PoliceOfficerSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return OfficerDetailsSerializer
+        return PoliceOfficerSerializer
 
 
 class ViolationViewSet(viewsets.ModelViewSet):

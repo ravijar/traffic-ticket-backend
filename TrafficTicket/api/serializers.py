@@ -16,6 +16,7 @@ from api.models import (
     Schedule
 )
 
+# Generic Serializers ------------------------------------------------------------------
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -78,15 +79,9 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class PoliceOfficerSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
-    telephone = serializers.CharField(source='nic.telephone')
-
-    def get_full_name(self, obj):
-        return f"{obj.nic.first_name} {obj.nic.last_name}"
-
     class Meta:
         model = PoliceOfficer
-        fields = ['officer_id','full_name','nic','police_station','telephone']
+        fields = '__all__'
 
 
 class ViolationSerializer(serializers.ModelSerializer):
@@ -99,11 +94,12 @@ class ScheduleSerializer(serializers.ModelSerializer):
         model = Schedule
         fields = '__all__'
 
-# new
 class SuggestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Suggestion
         fields = '__all__'
+
+# Custom Serializers ------------------------------------------------------------------
 
 class FineWithViolationAmountSerializer(serializers.ModelSerializer):
     # Create a read-only field to get the amount from ViolationType
@@ -139,3 +135,14 @@ class DriverDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleOwner
         fields = ['nic','full_name','vehicle_number','telephone']
+
+class OfficerDetailsSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    telephone = serializers.CharField(source='nic.telephone')
+
+    def get_full_name(self, obj):
+        return f"{obj.nic.first_name} {obj.nic.last_name}"
+
+    class Meta:
+        model = PoliceOfficer
+        fields = ['officer_id','full_name','nic','police_station','telephone']
