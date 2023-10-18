@@ -107,7 +107,7 @@ class UserViewSet(viewsets.ModelViewSet):
             user.set_password(new_password)
             user.save()
             # Update the session to avoid having to re-login
-            update_session_auth_hash(request, user)
+            # update_session_auth_hash(request, user)
             return Response({"status": "password changed"}, status=status.HTTP_200_OK)
         else:
             return Response(
@@ -240,4 +240,24 @@ class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
     serializer_class = FineWithViolationAmountSerializer
 
-# new
+    # @action(detail=False, methods=["get"])
+    # def get_queryset(self):     
+    #     queryset = Fine.objects.all()
+    #     driver_id = self.request.query_params.get('driver_id', None)
+    #     if driver_id is not None:
+    #         queryset = queryset.filter(driver=driver_id)
+    #     return queryset
+
+    def get_queryset(self):
+        # Get the driver_id from the request query parameters
+        driver_id = self.request.query_params.get('driver_id')
+
+        # Check if driver_id is provided in the request
+        if driver_id:
+            # Filter the fines based on the provided driver_id
+            queryset = Fine.objects.filter(driver__nic__nic=driver_id)
+        else:
+            # If driver_id is not provided, return an empty queryset
+            queryset = Fine.objects.none()
+
+        return queryset
