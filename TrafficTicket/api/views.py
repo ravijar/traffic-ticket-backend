@@ -16,9 +16,10 @@ from api.models import (
     PoliceOfficer,
     Violation,
     Suggestion,
-    Schedule
+    Schedule,
+    VehicleAccident
 )
-from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer, scheduledOfficersSerializer,DriverDetailsSerializer,OfficerDetailsSerializer)
+from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer, scheduledOfficersSerializer,DriverDetailsSerializer,OfficerDetailsSerializer,FineDetailsSerializer,AccidentDetailsSerializer,VehicleAccidentSerializer)
 from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -215,8 +216,12 @@ class FineViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Fine.objects.all()
-    serializer_class = FineSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return FineDetailsSerializer
+        return FineSerializer
 
 
 class AccidentViewSet(viewsets.ModelViewSet):
@@ -225,8 +230,12 @@ class AccidentViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Accident.objects.all()
-    serializer_class = AccidentSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return AccidentDetailsSerializer
+        return AccidentSerializer
 
 
 class MessageViewSet(viewsets.ModelViewSet):
@@ -318,3 +327,8 @@ class ScheduledOfficerList(generics.ListAPIView):
         date = self.kwargs.get('date')  # Retrieve the date from the URL
         queryset = Schedule.objects.filter(date=date)
         return queryset
+    
+class VehicleAccidentViewSet(viewsets.ModelViewSet):
+    queryset = VehicleAccident.objects.all()
+    serializer_class = VehicleAccidentSerializer
+    permission_classes = [permissions.AllowAny]

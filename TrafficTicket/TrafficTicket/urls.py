@@ -36,7 +36,8 @@ router.register(r"policeofficers", views.PoliceOfficerViewSet)
 router.register(r"violations", views.ViolationViewSet)
 router.register(r"suggestions", views.SuggestionViewSet)
 router.register(r"schedules", views.ScheduleViewSet)
-
+router.register(r"fines", views.FineViewSet)
+router.register(r"vehicleaccidents", views.VehicleAccidentViewSet)
 
 
 

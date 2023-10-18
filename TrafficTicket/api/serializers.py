@@ -13,7 +13,8 @@ from api.models import (
     PoliceOfficer,
     Violation,
     Suggestion,
-    Schedule
+    Schedule,
+    VehicleAccident
 )
 
 # Generic Serializers ------------------------------------------------------------------
@@ -99,6 +100,11 @@ class SuggestionSerializer(serializers.ModelSerializer):
         model = Suggestion
         fields = '__all__'
 
+class VehicleAccidentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehicleAccident
+        fields = '__all__'
+
 # Custom Serializers ------------------------------------------------------------------
 
 class FineWithViolationAmountSerializer(serializers.ModelSerializer):
@@ -146,3 +152,32 @@ class OfficerDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = PoliceOfficer
         fields = ['officer_id','full_name','nic','police_station','telephone']
+
+class FineDetailsSerializer(serializers.ModelSerializer):
+    driver_nic = serializers.CharField(source='driver.nic.nic')
+    vehicle_number = serializers.CharField(source='vehicle.vehicle_number')
+    violation_type = serializers.CharField(source='violation.violation_type')
+    payment = serializers.SerializerMethodField()
+
+    def get_payment(self, obj):
+        if obj.payment_status:
+            return "Paid"
+        else:
+            return "Not Paid"
+
+    class Meta:
+        model = Fine
+        fields = ['fine_id','driver_nic','vehicle_number','location','date','time','violation_type','due_date','payment']
+
+class AccidentDetailsSerializer(serializers.ModelSerializer):
+    vehicles = serializers.SerializerMethodField()
+
+    def get_vehicles(self, instance):
+        # Get the related vehicles for the given accident instance
+        vehicle_accidents = VehicleAccident.objects.filter(accident=instance)
+        vehicles = '\n'.join([va.vehicle.vehicle_number for va in vehicle_accidents])
+        return vehicles
+
+    class Meta:
+        model = Accident
+        fields = ['location','date','time','description','vehicles']

@@ -110,3 +110,7 @@ class Schedule(models.Model):
     location = models.CharField(max_length=50)
     shift = models.CharField(max_length=5)
     date = models.DateField()
+
+class VehicleAccident(models.Model):
+    accident = models.ForeignKey('Accident', on_delete=models.CASCADE)
+    vehicle = models.ForeignKey('Vehicle', on_delete=models.CASCADE)
