@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-z&b(-2ht$m25j+np%j%zh4o^20!%sc(!=!9gt#jhfx=c!xa_*h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*.ngrok.io', '79bc-2402-d000-8130-b3a7-a16c-4fae-59ec-5707.ngrok.io', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*.ngrok.io', '27eb-2401-dd00-10-20-80c7-6073-e2e9-740.ngrok.io', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -128,24 +128,19 @@ WSGI_APPLICATION = 'TrafficTicket.wsgi.application'
 
     
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'postgres',
-#         'USER': 'postgres',
-#         'PASSWORD': '12345678',
-#         'HOST': 'trafficticket.cprfebkd2fkc.eu-north-1.rds.amazonaws.com',
-#         'PORT': '5432'
-        
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': '12345678',
+        'HOST': 'trafficticket.cprfebkd2fkc.eu-north-1.rds.amazonaws.com',
+        'PORT': '5432'
+        
     }
 }
+
+
 
 
 

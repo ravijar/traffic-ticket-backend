@@ -320,19 +320,6 @@ class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
     serializer_class = FineWithViolationAmountSerializer
 
-class ScheduledOfficerList(generics.ListAPIView):
-    serializer_class = scheduledOfficersSerializer
-
-    def get_queryset(self):
-        date = self.kwargs.get('date')  # Retrieve the date from the URL
-        queryset = Schedule.objects.filter(date=date)
-        return queryset
-    
-class VehicleAccidentViewSet(viewsets.ModelViewSet):
-    queryset = VehicleAccident.objects.all()
-    serializer_class = VehicleAccidentSerializer
-    permission_classes = [permissions.AllowAny]
-
     def get_queryset(self):
         # Get the driver_id from the request query parameters
         driver_id = self.request.query_params.get('driver_id')
@@ -346,4 +333,19 @@ class VehicleAccidentViewSet(viewsets.ModelViewSet):
             queryset = Fine.objects.none()
 
         return queryset
+
+class ScheduledOfficerList(generics.ListAPIView):
+    serializer_class = scheduledOfficersSerializer
+
+    def get_queryset(self):
+        date = self.kwargs.get('date')  # Retrieve the date from the URL
+        queryset = Schedule.objects.filter(date=date)
+        return queryset
+    
+class VehicleAccidentViewSet(viewsets.ModelViewSet):
+    queryset = VehicleAccident.objects.all()
+    serializer_class = VehicleAccidentSerializer
+    permission_classes = [permissions.AllowAny]
+
+    
 
