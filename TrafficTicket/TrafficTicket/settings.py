@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-z&b(-2ht$m25j+np%j%zh4o^20!%sc(!=!9gt#jhfx=c!xa_*h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*.ngrok.io', '27eb-2401-dd00-10-20-80c7-6073-e2e9-740.ngrok.io', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*.ngrok.io', '    4f40-2401-dd00-10-20-80c7-6073-e2e9-740.ngrok.io', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -192,6 +192,7 @@ REST_FRAMEWORK = {
     # "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+        "rest_framework.permissions.AllowAny",
     ),
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",

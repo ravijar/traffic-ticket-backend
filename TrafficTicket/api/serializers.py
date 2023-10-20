@@ -12,9 +12,12 @@ from api.models import (
     Message,
     PoliceOfficer,
     Violation,
-    Suggestion
+    Suggestion,
+    Schedule,
+    VehicleAccident
 )
 
+# Generic Serializers ------------------------------------------------------------------
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -87,11 +90,22 @@ class ViolationSerializer(serializers.ModelSerializer):
         model = Violation
         fields = '__all__'
 
-# new
+class ScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Schedule
+        fields = '__all__'
+
 class SuggestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Suggestion
         fields = '__all__'
+
+class VehicleAccidentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehicleAccident
+        fields = '__all__'
+
+# Custom Serializers ------------------------------------------------------------------
 
 class FineWithViolationAmountSerializer(serializers.ModelSerializer):
     # Create a read-only field to get the amount from ViolationType
@@ -102,7 +116,68 @@ class FineWithViolationAmountSerializer(serializers.ModelSerializer):
         # Specify the fields you want to include in the response
         fields = ('fine_id', 'vehicle', 'date', 'time', 'violation_amount')
 
-# new
 
+class scheduledOfficersSerializer(serializers.ModelSerializer):
+    officer_id = serializers.CharField(source='officer.officer_id')
+    telephone = serializers.CharField(source='officer.nic.telephone')
+    full_name = serializers.SerializerMethodField()
 
+    def get_full_name(self, obj):
+        return f"{obj.officer.nic.first_name} {obj.officer.nic.last_name}"
 
+    class Meta:
+        model = Schedule
+        fields = ['location','shift','officer_id','full_name','telephone']
+        
+class DriverDetailsSerializer(serializers.ModelSerializer):
+    nic = serializers.CharField(source='nic.nic.nic')
+    full_name = serializers.SerializerMethodField()
+    telephone = serializers.CharField(source='nic.nic.telephone')
+    vehicle_number = serializers.CharField(source='vehicle_number.vehicle_number')
+
+    def get_full_name(self, obj):
+        return f"{obj.nic.nic.first_name} {obj.nic.nic.last_name}"
+    
+    class Meta:
+        model = VehicleOwner
+        fields = ['nic','full_name','vehicle_number','telephone']
+
+class OfficerDetailsSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    telephone = serializers.CharField(source='nic.telephone')
+
+    def get_full_name(self, obj):
+        return f"{obj.nic.first_name} {obj.nic.last_name}"
+
+    class Meta:
+        model = PoliceOfficer
+        fields = ['officer_id','full_name','nic','police_station','telephone']
+
+class FineDetailsSerializer(serializers.ModelSerializer):
+    driver_nic = serializers.CharField(source='driver.nic.nic')
+    vehicle_number = serializers.CharField(source='vehicle.vehicle_number')
+    violation_type = serializers.CharField(source='violation.violation_type')
+    payment = serializers.SerializerMethodField()
+
+    def get_payment(self, obj):
+        if obj.payment_status:
+            return "Paid"
+        else:
+            return "Not Paid"
+
+    class Meta:
+        model = Fine
+        fields = ['fine_id','driver_nic','vehicle_number','location','date','time','violation_type','due_date','payment']
+
+class AccidentDetailsSerializer(serializers.ModelSerializer):
+    vehicles = serializers.SerializerMethodField()
+
+    def get_vehicles(self, instance):
+        # Get the related vehicles for the given accident instance
+        vehicle_accidents = VehicleAccident.objects.filter(accident=instance)
+        vehicles = '\n'.join([va.vehicle.vehicle_number for va in vehicle_accidents])
+        return vehicles
+
+    class Meta:
+        model = Accident
+        fields = ['location','date','time','description','vehicles']
