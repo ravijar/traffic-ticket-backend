@@ -315,6 +315,13 @@ class ScheduleViewSet(viewsets.ModelViewSet):
         )
         schedule.save()
         return Response({"status": "schedule created"}, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=["GET"])
+    def get_scheduled_officers(self, request, *args, **kwargs):
+        date = request.GET.get('date')
+        queryset = Schedule.objects.filter(date=date)
+        serializer = scheduledOfficersSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
@@ -332,14 +339,6 @@ class FineList(generics.ListAPIView):
             # If driver_id is not provided, return an empty queryset
             queryset = Fine.objects.none()
 
-        return queryset
-
-class ScheduledOfficerList(generics.ListAPIView):
-    serializer_class = scheduledOfficersSerializer
-
-    def get_queryset(self):
-        date = self.kwargs.get('date')  # Retrieve the date from the URL
-        queryset = Schedule.objects.filter(date=date)
         return queryset
     
 class VehicleAccidentViewSet(viewsets.ModelViewSet):
