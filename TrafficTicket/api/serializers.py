@@ -128,19 +128,26 @@ class scheduledOfficersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = ['location','shift','officer_id','full_name','telephone']
-        
+
+
 class DriverDetailsSerializer(serializers.ModelSerializer):
-    nic = serializers.CharField(source='nic.nic.nic')
+    nic = serializers.CharField(source='nic.nic')
     full_name = serializers.SerializerMethodField()
-    telephone = serializers.CharField(source='nic.nic.telephone')
-    vehicle_number = serializers.CharField(source='vehicle_number.vehicle_number')
+    telephone = serializers.CharField(source='nic.telephone')
+    vehicle_number = serializers.SerializerMethodField()
 
     def get_full_name(self, obj):
-        return f"{obj.nic.nic.first_name} {obj.nic.nic.last_name}"
+        return f"{obj.nic.first_name} {obj.nic.last_name}"
+    
+    def get_vehicle_number(self, instance):
+        vehicle_owners = VehicleOwner.objects.filter(nic=instance)
+        vehicles = '\n'.join([va.vehicle_number.vehicle_number for va in vehicle_owners])
+        return vehicles
     
     class Meta:
-        model = VehicleOwner
-        fields = ['nic','full_name','vehicle_number','telephone']
+        model = Driver
+        fields = ['nic', 'full_name','vehicle_number', 'telephone']
+
 
 class OfficerDetailsSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()

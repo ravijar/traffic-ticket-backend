@@ -183,8 +183,12 @@ class DriverViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Driver.objects.all()
-    serializer_class = DriverSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return DriverDetailsSerializer
+        return DriverSerializer
 
 
 class VehicleOwnerViewSet(viewsets.ModelViewSet):
@@ -193,12 +197,8 @@ class VehicleOwnerViewSet(viewsets.ModelViewSet):
     """
 
     queryset = VehicleOwner.objects.all()
+    serializer_class = VehicleOwnerSerializer
     permission_classes = [permissions.AllowAny]
-
-    def get_serializer_class(self):
-        if self.action == "list":
-            return DriverDetailsSerializer
-        return VehicleOwnerSerializer
 
 
 class VehicleViewSet(viewsets.ModelViewSet):
