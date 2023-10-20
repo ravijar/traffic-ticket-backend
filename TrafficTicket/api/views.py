@@ -15,13 +15,16 @@ from api.models import (
     Message,
     PoliceOfficer,
     Violation,
-    Suggestion
+    Suggestion,
+    Schedule,
+    VehicleAccident
 )
-from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer)
+from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer, scheduledOfficersSerializer,DriverDetailsSerializer,OfficerDetailsSerializer,FineDetailsSerializer,AccidentDetailsSerializer,VehicleAccidentSerializer)
 from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Count
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -190,8 +193,12 @@ class VehicleOwnerViewSet(viewsets.ModelViewSet):
     """
 
     queryset = VehicleOwner.objects.all()
-    serializer_class = VehicleOwnerSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return DriverDetailsSerializer
+        return VehicleOwnerSerializer
 
 
 class VehicleViewSet(viewsets.ModelViewSet):
@@ -210,8 +217,12 @@ class FineViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Fine.objects.all()
-    serializer_class = FineSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return FineDetailsSerializer
+        return FineSerializer
 
 
 class AccidentViewSet(viewsets.ModelViewSet):
@@ -220,8 +231,12 @@ class AccidentViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Accident.objects.all()
-    serializer_class = AccidentSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return AccidentDetailsSerializer
+        return AccidentSerializer
 
 
 class MessageViewSet(viewsets.ModelViewSet):
@@ -240,8 +255,12 @@ class PoliceOfficerViewSet(viewsets.ModelViewSet):
     """
 
     queryset = PoliceOfficer.objects.all()
-    serializer_class = PoliceOfficerSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return OfficerDetailsSerializer
+        return PoliceOfficerSerializer
 
 
 class ViolationViewSet(viewsets.ModelViewSet):
@@ -264,17 +283,55 @@ class SuggestionViewSet(viewsets.ModelViewSet):
     serializer_class = SuggestionSerializer
     permission_classes = [permissions.AllowAny]
 
+class ScheduleViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = Schedule.objects.all()
+    serializer_class = ScheduleSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=["post"])
+    def create_schedule(self, request):
+        """Create a new schedule.
+            api [POST] /api/schedules/create_schedule/]
+            required ['officer_id', 'location', 'shift', 'date']]"""
+        print("create schedule")
+        print(request.data["date"])
+
+        try:
+            officer = PoliceOfficer.objects.get(officer_id=request.data["officer_id"])
+        except:
+            return Response(
+                {"error": "Officer not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        schedule = Schedule.objects.create(
+            officer = officer,
+            location = request.data["location"],
+            shift = request.data["shift"],
+            date = request.data["date"],
+        )
+        schedule.save()
+        return Response({"status": "schedule created"}, status=status.HTTP_201_CREATED)
+
 class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
     serializer_class = FineWithViolationAmountSerializer
 
-    # @action(detail=False, methods=["get"])
-    # def get_queryset(self):     
-    #     queryset = Fine.objects.all()
-    #     driver_id = self.request.query_params.get('driver_id', None)
-    #     if driver_id is not None:
-    #         queryset = queryset.filter(driver=driver_id)
-    #     return queryset
+class ScheduledOfficerList(generics.ListAPIView):
+    serializer_class = scheduledOfficersSerializer
+
+    def get_queryset(self):
+        date = self.kwargs.get('date')  # Retrieve the date from the URL
+        queryset = Schedule.objects.filter(date=date)
+        return queryset
+    
+class VehicleAccidentViewSet(viewsets.ModelViewSet):
+    queryset = VehicleAccident.objects.all()
+    serializer_class = VehicleAccidentSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         # Get the driver_id from the request query parameters
@@ -289,3 +346,4 @@ class FineList(generics.ListAPIView):
             queryset = Fine.objects.none()
 
         return queryset
+
