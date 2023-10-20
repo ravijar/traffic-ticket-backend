@@ -110,6 +110,7 @@ class UserViewSet(viewsets.ModelViewSet):
             user.set_password(new_password)
             user.save()
             # Update the session to avoid having to re-login
+
             return Response({"status": "password changed"}, status=status.HTTP_200_OK)
         else:
             return Response(
@@ -318,7 +319,6 @@ class ScheduleViewSet(viewsets.ModelViewSet):
 class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
     serializer_class = FineWithViolationAmountSerializer
- 
 
 class ScheduledOfficerList(generics.ListAPIView):
     serializer_class = scheduledOfficersSerializer
@@ -332,3 +332,18 @@ class VehicleAccidentViewSet(viewsets.ModelViewSet):
     queryset = VehicleAccident.objects.all()
     serializer_class = VehicleAccidentSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        # Get the driver_id from the request query parameters
+        driver_id = self.request.query_params.get('driver_id')
+
+        # Check if driver_id is provided in the request
+        if driver_id:
+            # Filter the fines based on the provided driver_id
+            queryset = Fine.objects.filter(driver__nic__nic=driver_id)
+        else:
+            # If driver_id is not provided, return an empty queryset
+            queryset = Fine.objects.none()
+
+        return queryset
+
