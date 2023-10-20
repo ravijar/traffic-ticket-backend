@@ -240,13 +240,6 @@ class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
     serializer_class = FineWithViolationAmountSerializer
 
-    # @action(detail=False, methods=["get"])
-    # def get_queryset(self):     
-    #     queryset = Fine.objects.all()
-    #     driver_id = self.request.query_params.get('driver_id', None)
-    #     if driver_id is not None:
-    #         queryset = queryset.filter(driver=driver_id)
-    #     return queryset
 
     def get_queryset(self):
         # Get the driver_id from the request query parameters
