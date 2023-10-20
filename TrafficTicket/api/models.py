@@ -74,6 +74,7 @@ class PoliceOfficer(models.Model):
     nic = models.OneToOneField('Person', primary_key=True, on_delete=models.CASCADE)
     # password = models.CharField(max_length=128)  
     police_station = models.CharField(max_length=20)
+    officer_id = models.CharField(max_length=10, null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
 
