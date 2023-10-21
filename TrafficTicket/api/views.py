@@ -45,7 +45,8 @@ from api.serializers import (
     VehicleAccidentSerializer,
     RecentAccidentsSerializer,
     OfficerLocationSerializer,
-    CameraLocationSerializer
+    CameraLocationSerializer,
+    PoliceStationLocationsSerializer
 )
 from rest_framework import generics
 from rest_framework.decorators import action
@@ -412,6 +413,13 @@ class OfficerLocationViewSet(viewsets.ModelViewSet):
     queryset = OfficerLocation.objects.all()
     serializer_class = OfficerLocationSerializer
     permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=["GET"])
+    def get_police_station_locations(self, request, *args, **kwargs):
+        police_station = request.GET.get('police_station')
+        queryset = OfficerLocation.objects.filter(police_station=police_station)
+        serializer = PoliceStationLocationsSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 class CameraLocationViewSet(viewsets.ModelViewSet):
     queryset = CameraLocation.objects.all()
