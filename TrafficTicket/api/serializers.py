@@ -14,7 +14,8 @@ from api.models import (
     Violation,
     Suggestion,
     Schedule,
-    VehicleAccident
+    VehicleAccident,
+    OTPVerification
 )
 
 # Generic Serializers ------------------------------------------------------------------
@@ -181,3 +182,8 @@ class AccidentDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Accident
         fields = ['location','date','time','description','vehicles']
+
+class OTPVerificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OTPVerification
+        fields = '__all__'
