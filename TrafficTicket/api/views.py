@@ -19,12 +19,14 @@ from api.models import (
     Schedule,
     VehicleAccident
 )
-from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer, scheduledOfficersSerializer,DriverDetailsSerializer,OfficerDetailsSerializer,FineDetailsSerializer,AccidentDetailsSerializer,VehicleAccidentSerializer)
+from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer, scheduledOfficersSerializer,DriverDetailsSerializer,OfficerDetailsSerializer,FineDetailsSerializer,AccidentDetailsSerializer,VehicleAccidentSerializer,RecentAccidentsSerializer)
 from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Count
+from django.db.models.functions import ExtractMonth,ExtractDay
+from datetime import date,timedelta
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -238,6 +240,39 @@ class AccidentViewSet(viewsets.ModelViewSet):
             return AccidentDetailsSerializer
         return AccidentSerializer
 
+    @action(detail=False,methods=["GET"])
+    def get_recent_accidents(self, request, *args, **kwargs):
+        queryset = Accident.objects.all().order_by('-index')[:6]
+        serializer = RecentAccidentsSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False,methods=["GET"])
+    def get_monthly_count(self, request, *args, **kwargs):
+        current_year = date.today().year
+        queryset = Accident.objects.filter(date__year=current_year).annotate(month=ExtractMonth('date')).values('month').annotate(count=Count('index')).values('month', 'count')
+        monthly_count = [0]*12
+        for data in queryset:
+            monthly_count[data['month']-1] = data['count']  
+        print(queryset)
+        return Response(monthly_count)
+
+    @action(detail=False,methods=["GET"])
+    def get_weekly_count(self, request, *args, **kwargs):
+        today = date.today()
+        weekday = today.weekday()
+        start_of_week = today - timedelta(days=weekday)
+        end_of_week = start_of_week + timedelta(days=6)
+        queryset = Accident.objects.filter(date__range=[start_of_week, end_of_week]).annotate(day=ExtractDay('date')).values('day').annotate(count=Count('index')).values('day', 'count')
+        weekly_count = [0]*7
+        for data in queryset:
+            weekly_count[data['day']-start_of_week.day] = data['count']
+        return Response(weekly_count)
+    
+    @action(detail=False,methods=["GET"])
+    def get_reported_accident_count(self,request,*args,**kwargs):
+        today = date.today()
+        queryset = Accident.objects.filter(date=today)
+        return Response(queryset.count())
 
 class MessageViewSet(viewsets.ModelViewSet):
     """

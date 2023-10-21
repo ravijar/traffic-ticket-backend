@@ -188,3 +188,9 @@ class AccidentDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Accident
         fields = ['location','date','time','description','vehicles']
+
+class RecentAccidentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Accident
+        fields = ['index','location','date','time']
+
