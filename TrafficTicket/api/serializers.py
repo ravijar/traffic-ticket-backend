@@ -57,10 +57,19 @@ class FineSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class ViolationTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ViolationType
         fields = '__all__'
+
+
+class FineIdSerializer(serializers.ModelSerializer):
+    violation_type = serializers.CharField(source='violation.violation_type')
+
+    class Meta:
+        model = Fine
+        fields = ('fine_id', 'date', 'violation_type', 'location', 'payment_status')
 
 
 class AccidentSerializer(serializers.ModelSerializer):

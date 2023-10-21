@@ -16,7 +16,7 @@ from api.models import (
     PoliceOfficer,
     Violation
 )
-from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer)
+from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,FineIdSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer)
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -112,6 +112,20 @@ class FineViewSet(viewsets.ModelViewSet):
     serializer_class = FineSerializer
     permission_classes = [permissions.AllowAny]
 
+class FineByIdViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    # driver_id = "992771330V"  # Change this to the desired driver's ID
+
+    serializer_class = FineIdSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        driver_id = self.kwargs['driver_id']
+        driver = Driver.objects.get(nic=driver_id)  # Modify this line to match your Driver model's field.
+        queryset = Fine.objects.filter(driver=driver)
+        return queryset
 
 class AccidentViewSet(viewsets.ModelViewSet):
     """
