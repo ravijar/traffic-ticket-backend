@@ -14,7 +14,9 @@ from api.models import (
     Violation,
     Suggestion,
     Schedule,
-    VehicleAccident
+    VehicleAccident,
+    OfficerLocation,
+    CameraLocation
 )
 
 # Generic Serializers ------------------------------------------------------------------
@@ -103,6 +105,16 @@ class SuggestionSerializer(serializers.ModelSerializer):
 class VehicleAccidentSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleAccident
+        fields = '__all__'
+
+class OfficerLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OfficerLocation
+        fields = '__all__'
+
+class CameraLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CameraLocation
         fields = '__all__'
 
 # Custom Serializers ------------------------------------------------------------------

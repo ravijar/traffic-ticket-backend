@@ -110,3 +110,11 @@ class Schedule(models.Model):
 class VehicleAccident(models.Model):
     accident = models.ForeignKey('Accident', on_delete=models.CASCADE)
     vehicle = models.ForeignKey('Vehicle', on_delete=models.CASCADE)
+
+class OfficerLocation(models.Model):
+    police_station = models.CharField(max_length=20)
+    location = models.CharField(max_length=50)
+
+class CameraLocation(models.Model):
+    police_station = models.CharField(max_length=20)
+    location = models.CharField(max_length=50)

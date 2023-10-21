@@ -17,9 +17,36 @@ from api.models import (
     Violation,
     Suggestion,
     Schedule,
-    VehicleAccident
+    VehicleAccident,
+    CameraLocation,
+    OfficerLocation
 )
-from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer, scheduledOfficersSerializer,DriverDetailsSerializer,OfficerDetailsSerializer,FineDetailsSerializer,AccidentDetailsSerializer,VehicleAccidentSerializer,RecentAccidentsSerializer)
+from api.serializers import (
+    ViolationTypeSerializer,
+    UserSerializer,
+    AdminSerializer,
+    PersonSerializer,
+    DriverSerializer,
+    VehicleOwnerSerializer,
+    VehicleSerializer,
+    FineSerializer,
+    AccidentSerializer,
+    MessageSerializer,
+    PoliceOfficerSerializer,
+    ViolationSerializer,
+    FineWithViolationAmountSerializer,
+    SuggestionSerializer,
+    ScheduleSerializer, 
+    scheduledOfficersSerializer,
+    DriverDetailsSerializer,
+    OfficerDetailsSerializer,
+    FineDetailsSerializer,
+    AccidentDetailsSerializer,
+    VehicleAccidentSerializer,
+    RecentAccidentsSerializer,
+    OfficerLocationSerializer,
+    CameraLocationSerializer
+)
 from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -381,5 +408,14 @@ class VehicleAccidentViewSet(viewsets.ModelViewSet):
     serializer_class = VehicleAccidentSerializer
     permission_classes = [permissions.AllowAny]
 
+class OfficerLocationViewSet(viewsets.ModelViewSet):
+    queryset = OfficerLocation.objects.all()
+    serializer_class = OfficerLocationSerializer
+    permission_classes = [permissions.AllowAny]
+
+class CameraLocationViewSet(viewsets.ModelViewSet):
+    queryset = CameraLocation.objects.all()
+    serializer_class = CameraLocationSerializer
+    permission_classes = [permissions.AllowAny]
     
 
