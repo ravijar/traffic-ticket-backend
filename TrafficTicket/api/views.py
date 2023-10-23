@@ -17,14 +17,45 @@ from api.models import (
     Violation,
     Suggestion,
     Schedule,
-    VehicleAccident
+    VehicleAccident,
+    OTPVerification
 )
-from api.serializers import (ViolationTypeSerializer,UserSerializer,AdminSerializer,PersonSerializer,DriverSerializer,VehicleOwnerSerializer,VehicleSerializer,FineSerializer,AccidentSerializer,MessageSerializer,PoliceOfficerSerializer,ViolationSerializer,FineWithViolationAmountSerializer,SuggestionSerializer,ScheduleSerializer, scheduledOfficersSerializer,DriverDetailsSerializer,OfficerDetailsSerializer,FineDetailsSerializer,AccidentDetailsSerializer,VehicleAccidentSerializer)
+from api.serializers import (
+    ViolationTypeSerializer,
+    UserSerializer,
+    AdminSerializer,
+    PersonSerializer,
+    DriverSerializer,
+    VehicleOwnerSerializer,
+    VehicleSerializer,
+    FineSerializer,
+    AccidentSerializer,
+    MessageSerializer,
+    PoliceOfficerSerializer,
+    ViolationSerializer,
+    FineWithViolationAmountSerializer,
+    SuggestionSerializer,ScheduleSerializer, 
+    scheduledOfficersSerializer,
+    DriverDetailsSerializer,
+    OfficerDetailsSerializer,
+    FineDetailsSerializer,
+    AccidentDetailsSerializer,
+    VehicleAccidentSerializer,
+    OTPVerificationSerializer
+    )
 from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Count
+from django.core.mail import send_mail
+from pyotp import TOTP
+import random
+import string
+from django.http import JsonResponse
+from datetime import datetime, timedelta
+from django.utils import timezone
+
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -57,8 +88,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """Register a new user.
             api [POST] /api/users/driver_signup/]
             required ['password', 'email', 'first_name', 'last_name', 'nic', 'license_id']]"""
-        print("driver signup")
-        print(request.data)
+        
         user = User.objects.create_user(
             username=request.data["nic"],
             password=request.data["password"],
@@ -145,6 +175,108 @@ class UserViewSet(viewsets.ModelViewSet):
         )
         officer.save()
         return Response({"status": "officer created"}, status=status.HTTP_201_CREATED)
+    
+
+    @action(detail=False, methods=["post"])
+    def send_otp(self, request):
+        """
+        Generate and send an OTP to the user's email.
+        api [POST] /api/users/send_otp/
+        required: ['nic']
+        """
+        nic = request.data.get("nic")
+
+        try:
+            user = User.objects.get(username=nic)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+        # Check if an OTPVerification entry with the same `nic` already exists
+        otp_verification, created = OTPVerification.objects.get_or_create(nic=nic)
+        otp = ''.join(random.choices(string.digits, k=6))
+        
+       
+        otp_verification.otp = otp
+        otp_verification.save()
+        
+
+        totp = TOTP(otp)
+        otp_url = totp.provisioning_uri(user.email, issuer_name="YourApp")
+
+        subject = "OTP Verification"
+        message = f"Your OTP for verification is: {otp}"
+        from_email = "trafficticketse18@gmail.com"  # Update with your email
+        recipient_list = [user.email]
+
+        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
+        return Response({"status": "OTP sent successfully."}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["post"])
+    def verify_otp(self, request):
+        """
+        Verify the entered OTP.
+        api [POST] /api/users/verify_otp/
+        required: ['nic', 'entered_otp']
+        """
+        nic = request.data.get("nic")
+        entered_otp = request.data.get("entered_otp")
+        
+        try:
+            user = User.objects.get(username=nic)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            otp_verification = OTPVerification.objects.get(nic=nic)
+        except OTPVerification.DoesNotExist:
+            return Response({"error": "OTP not found for the user."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        stored_otp = otp_verification.otp
+
+        
+        
+        if (stored_otp == entered_otp):
+            return Response({"status": "OTP is valid."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @action(detail=False, methods=["put"])
+    def update_password(self, request):
+        """
+        Change a user's password.
+        api [POST] /api/users/update_password/
+        required: ['nic','new_password']
+        """
+        nic = request.data.get("nic")
+        new_password = request.data.get("new_password")
+
+        if not nic or not new_password:
+            return Response(
+                {"error": "NIC and new password are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(username=nic)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        
+        user.set_password(new_password)
+        user.save()
+            # Update the session to avoid having to re-login
+
+        return Response({"status": "password changed"}, status=status.HTTP_200_OK)
+        
+        
+
+    
 
 
 class ViolationTypeViewSet(viewsets.ModelViewSet):
@@ -320,6 +452,7 @@ class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
     serializer_class = FineWithViolationAmountSerializer
 
+
     def get_queryset(self):
         # Get the driver_id from the request query parameters
         driver_id = self.request.query_params.get('driver_id')
@@ -349,3 +482,11 @@ class VehicleAccidentViewSet(viewsets.ModelViewSet):
 
     
 
+class OTPVerificationViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+
+    queryset = OTPVerification.objects.all()
+    serializer_class = OTPVerificationSerializer
+    permission_classes = [permissions.AllowAny]

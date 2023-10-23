@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-z&b(-2ht$m25j+np%j%zh4o^20!%sc(!=!9gt#jhfx=c!xa_*h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*.ngrok.io', '27eb-2401-dd00-10-20-80c7-6073-e2e9-740.ngrok.io', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*.ngrok.io', '8f32-112-134-194-1.ngrok.io', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -141,6 +141,17 @@ DATABASES = {
 }
 
 
+# Django email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Update with your SMTP server address
+EMAIL_PORT = 587  # Update with the appropriate port (587 is common for TLS)
+EMAIL_USE_TLS = True  # Use TLS for secure connection
+EMAIL_USE_SSL = False  # Set to False when using TLS
+EMAIL_HOST_USER = 'trafficticketse18@gmail.com'  # Your email address
+EMAIL_HOST_PASSWORD = 'upfkxirqihvpthdt'  # Your email password
+
+# You can also set the default "from" email address for sending emails
+DEFAULT_FROM_EMAIL = 'trafficticketse18@gmail.com'
 
 
 
