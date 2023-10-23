@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-z&b(-2ht$m25j+np%j%zh4o^20!%sc(!=!9gt#jhfx=c!xa_*h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*.ngrok.io', '6440-2401-dd00-10-20-4bb-9846-df31-8a0e.ngrok.io', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*.ngrok.io', '8f32-112-134-194-1.ngrok.io', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -128,24 +128,30 @@ WSGI_APPLICATION = 'TrafficTicket.wsgi.application'
 
     
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'postgres',
-#         'USER': 'postgres',
-#         'PASSWORD': '12345678',
-#         'HOST': 'trafficticket.cprfebkd2fkc.eu-north-1.rds.amazonaws.com',
-#         'PORT': '5432'
-        
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': '12345678',
+        'HOST': 'trafficticket.cprfebkd2fkc.eu-north-1.rds.amazonaws.com',
+        'PORT': '5432'
+        
     }
 }
+
+
+# Django email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Update with your SMTP server address
+EMAIL_PORT = 587  # Update with the appropriate port (587 is common for TLS)
+EMAIL_USE_TLS = True  # Use TLS for secure connection
+EMAIL_USE_SSL = False  # Set to False when using TLS
+EMAIL_HOST_USER = 'trafficticketse18@gmail.com'  # Your email address
+EMAIL_HOST_PASSWORD = 'upfkxirqihvpthdt'  # Your email password
+
+# You can also set the default "from" email address for sending emails
+DEFAULT_FROM_EMAIL = 'trafficticketse18@gmail.com'
 
 
 
@@ -197,6 +203,7 @@ REST_FRAMEWORK = {
     # "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+        "rest_framework.permissions.AllowAny",
     ),
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",

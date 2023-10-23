@@ -102,3 +102,22 @@ class Violation(models.Model):
 class Suggestion(models.Model):
     id = models.AutoField(primary_key=True)
     suggestion = models.CharField(max_length=5000)
+
+
+class Schedule(models.Model):
+    id = models.AutoField(primary_key=True)
+    officer = models.ForeignKey('PoliceOfficer', on_delete=models.CASCADE)
+    location = models.CharField(max_length=50)
+    shift = models.CharField(max_length=5)
+    date = models.DateField()
+
+class VehicleAccident(models.Model):
+    accident = models.ForeignKey('Accident', on_delete=models.CASCADE)
+    vehicle = models.ForeignKey('Vehicle', on_delete=models.CASCADE)
+
+
+class OTPVerification(models.Model):
+    id = models.AutoField(primary_key=True)
+    nic = models.CharField(max_length=12)
+    otp = models.CharField(max_length=6)
+    timestamp = models.DateTimeField(auto_now_add=True)
