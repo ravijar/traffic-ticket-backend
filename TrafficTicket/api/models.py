@@ -48,8 +48,8 @@ class Person(models.Model):
     nic = models.CharField(max_length=12, primary_key=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    telephone = models.CharField(max_length=10)
-    address = models.CharField(max_length=200)
+    telephone = models.CharField(max_length=10, null=True)
+    address = models.CharField(max_length=200, null=True)
 
 #done
 class Accident(models.Model):
@@ -75,6 +75,7 @@ class PoliceOfficer(models.Model):
     nic = models.OneToOneField('Person', primary_key=True, on_delete=models.CASCADE)
     # password = models.CharField(max_length=128)  
     police_station = models.CharField(max_length=20)
+    officer_id = models.CharField(max_length=10, null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
 
@@ -98,3 +99,26 @@ class Violation(models.Model):
     license_plate_image = models.BinaryField()
     detected_license_plate = models.CharField(max_length=7)
 
+
+class Suggestion(models.Model):
+    id = models.AutoField(primary_key=True)
+    suggestion = models.CharField(max_length=5000)
+
+
+class Schedule(models.Model):
+    id = models.AutoField(primary_key=True)
+    officer = models.ForeignKey('PoliceOfficer', on_delete=models.CASCADE)
+    location = models.CharField(max_length=50)
+    shift = models.CharField(max_length=5)
+    date = models.DateField()
+
+class VehicleAccident(models.Model):
+    accident = models.ForeignKey('Accident', on_delete=models.CASCADE)
+    vehicle = models.ForeignKey('Vehicle', on_delete=models.CASCADE)
+
+
+class OTPVerification(models.Model):
+    id = models.AutoField(primary_key=True)
+    nic = models.CharField(max_length=12)
+    otp = models.CharField(max_length=6)
+    timestamp = models.DateTimeField(auto_now_add=True)

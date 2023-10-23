@@ -151,6 +151,17 @@ DATABASES = {
     }
 }
 
+# Django email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Update with your SMTP server address
+EMAIL_PORT = 587  # Update with the appropriate port (587 is common for TLS)
+EMAIL_USE_TLS = True  # Use TLS for secure connection
+EMAIL_USE_SSL = False  # Set to False when using TLS
+EMAIL_HOST_USER = 'trafficticketse18@gmail.com'  # Your email address
+EMAIL_HOST_PASSWORD = 'upfkxirqihvpthdt'  # Your email password
+
+# You can also set the default "from" email address for sending emails
+DEFAULT_FROM_EMAIL = 'trafficticketse18@gmail.com'
 
 
 
@@ -202,10 +213,11 @@ REST_FRAMEWORK = {
     # "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+        "rest_framework.permissions.AllowAny",
     ),
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
-        # "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
     "PAGE_SIZE": 100,
