@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets,permissions
-from django.contrib.auth.models import  User
+from django.contrib.auth.models import  User,Group
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from api.models import (
@@ -65,6 +65,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         print(token.__str__())
         # Add custom claims
         token['username'] = user.username
+        token['role'] = user.groups.all()[0].name
         # ...
 
         return token
@@ -94,6 +95,8 @@ class UserViewSet(viewsets.ModelViewSet):
             password=request.data["password"],
             email=request.data["email"],
         )
+        group = Group.objects.get(name="driver")
+        user.groups.add(group)
         user.save()
         p, is_created = Person.objects.get_or_create(
                 first_name=request.data["first_name"],
@@ -159,6 +162,8 @@ class UserViewSet(viewsets.ModelViewSet):
             username=request.data["nic"],
             password=request.data["password"],
         )
+        group = Group.objects.get(name="officer")
+        user.groups.add(group)
         user.save()
         p, is_created = Person.objects.get_or_create(
                 first_name=request.data["first_name"],
