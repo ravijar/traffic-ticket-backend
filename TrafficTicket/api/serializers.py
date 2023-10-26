@@ -64,10 +64,19 @@ class FineSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class ViolationTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ViolationType
         fields = '__all__'
+
+
+class FineIdSerializer(serializers.ModelSerializer):
+    violation_type = serializers.CharField(source='violation.violation_type')
+
+    class Meta:
+        model = Fine
+        fields = ('fine_id', 'date', 'violation_type', 'location', 'payment_status')
 
 
 class AccidentSerializer(serializers.ModelSerializer):
@@ -81,6 +90,28 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = '__all__'
 
+# class MessageSerializer(serializers.ModelSerializer):
+#     sender_nic = serializers.SerializerMethodField()
+#     police_station = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Message
+#         fields = '__all__'
+
+#     def get_sender_nic(self, obj):
+#         try:
+#             police_officer = PoliceOfficer.objects.get(nic=obj.sender_nic)
+            
+#             return police_officer.officer_id
+#         except PoliceOfficer.DoesNotExist:
+#             return None
+
+#     def get_police_station(self, obj):
+#         try:
+#             police_officer = PoliceOfficer.objects.get(nic=obj.sender_nic)
+#             return police_officer.police_station
+#         except PoliceOfficer.DoesNotExist:
+#             return None
 
 class PoliceOfficerSerializer(serializers.ModelSerializer):
     class Meta:
