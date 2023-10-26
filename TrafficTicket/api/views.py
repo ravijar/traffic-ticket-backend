@@ -547,6 +547,22 @@ class VehicleAccidentViewSet(viewsets.ModelViewSet):
     serializer_class = VehicleAccidentSerializer
     permission_classes = [permissions.AllowAny]
 
+class OfficerLocationViewSet(viewsets.ModelViewSet):
+    queryset = OfficerLocation.objects.all()
+    serializer_class = OfficerLocationSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=["GET"])
+    def get_police_station_locations(self, request, *args, **kwargs):
+        police_station = request.GET.get('police_station')
+        queryset = OfficerLocation.objects.filter(police_station=police_station)
+        serializer = PoliceStationLocationsSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+class CameraLocationViewSet(viewsets.ModelViewSet):
+    queryset = CameraLocation.objects.all()
+    serializer_class = CameraLocationSerializer
+    permission_classes = [permissions.AllowAny]
     
 
 class OTPVerificationViewSet(viewsets.ModelViewSet):
