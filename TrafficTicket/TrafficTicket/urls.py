@@ -56,6 +56,6 @@ urlpatterns = [
     path('api/send_otp/', views.UserViewSet.as_view({'post': 'send_otp'}), name='send-otp'),
     path('api/verify_otp/', views.UserViewSet.as_view({'post': 'verify_otp'}), name='verify-otp'),
     path('api/finebyid/<str:driver_id>/', views.FineByIdViewSet.as_view({'get':'list'}), name='fine-by-driver'),
-
+    
 
 ]

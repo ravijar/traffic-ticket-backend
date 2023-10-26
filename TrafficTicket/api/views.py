@@ -41,7 +41,8 @@ from api.serializers import (
     FineDetailsSerializer,
     AccidentDetailsSerializer,
     VehicleAccidentSerializer,
-    OTPVerificationSerializer
+    OTPVerificationSerializer,
+    FineIdSerializer
     )
 from rest_framework import generics
 from rest_framework.decorators import action
@@ -184,9 +185,10 @@ class UserViewSet(viewsets.ModelViewSet):
         nic = request.data.get("nic")
 
         try:
-            user = User.objects.get(username=nic)
+            user = User.objects.get(username=nic)   
+            
         except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "User not found."},  status=status.HTTP_404_NOT_FOUND)
 
 
         # Check if an OTPVerification entry with the same `nic` already exists
@@ -361,20 +363,20 @@ class FineViewSet(viewsets.ModelViewSet):
     serializer_class = FineSerializer
     permission_classes = [permissions.AllowAny]
 
-# class FineByIdViewSet(viewsets.ModelViewSet):
-#     """
-#     API endpoint that allows groups to be viewed or edited.
-#     """
-#     # driver_id = "992771330V"  # Change this to the desired driver's ID
+class FineByIdViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    # driver_id = "992771330V"  # Change this to the desired driver's ID
 
-#     serializer_class = FineIdSerializer
-#     permission_classes = [permissions.AllowAny]
+    serializer_class = FineIdSerializer
+    permission_classes = [permissions.AllowAny]
 
-#     def get_queryset(self):
-#         driver_id = self.kwargs['driver_id']
-#         driver = Driver.objects.get(nic=driver_id)  # Modify this line to match your Driver model's field.
-#         queryset = Fine.objects.filter(driver=driver)
-#         return queryset
+    def get_queryset(self):
+        driver_id = self.kwargs['driver_id']
+        driver = Driver.objects.get(nic=driver_id)  # Modify this line to match your Driver model's field.
+        queryset = Fine.objects.filter(driver=driver)
+        return queryset
 
 class AccidentViewSet(viewsets.ModelViewSet):
     """
@@ -399,6 +401,54 @@ class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
     permission_classes = [permissions.AllowAny]
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        # Create a list to hold the serialized data for each message
+        data = []
+
+        for message in queryset:
+            
+            # Get the sender's police officer information based on sender_nic
+            try:
+                # police_officer = PoliceOfficer.objects.get(officer_id=message.sender_nic)
+                # sender_id = police_officer.officer_id
+                sender_id = message.sender_nic
+                police_officer = PoliceOfficer.objects.get(officer_id=sender_id)
+
+                police_station = police_officer.police_station
+            except PoliceOfficer.DoesNotExist:
+                sender_id = None
+                police_station = None
+
+            # Create a dictionary for the current message
+            message_data = {
+                'message_body': message.body,
+                'sender_id': sender_id,
+                'police_station': police_station,
+            }
+
+            data.append(message_data)
+
+        return Response(data, status=status.HTTP_200_OK)
+
+# class CustomMessageListView(generics.ListAPIView):
+#     serializer_class = MessageSerializer
+
+#     def get_queryset(self):
+#         # Retrieve messages along with sender's officer_id and police_station
+#         queryset = Message.objects.all()
+#         queryset = queryset.values(
+#             'body',
+#             sender_nic=F('sender__policeofficer__officer_id'),
+#             police_station=F('sender__policeofficer__police_station')
+#         )
+#         return queryset
+
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.get_queryset()
+#         serializer = self.get_serializer(queryset, many=True)
+#         return Response(serializer.data)
 
 class PoliceOfficerViewSet(viewsets.ModelViewSet):
     """
