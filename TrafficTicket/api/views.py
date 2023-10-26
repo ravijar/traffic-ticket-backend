@@ -392,14 +392,6 @@ class FineViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             return FineDetailsSerializer
         return FineSerializer
-class FineViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-
-    queryset = Fine.objects.all()
-    serializer_class = FineSerializer
-    permission_classes = [permissions.AllowAny]
 
 class FineByIdViewSet(viewsets.ModelViewSet):
     """
