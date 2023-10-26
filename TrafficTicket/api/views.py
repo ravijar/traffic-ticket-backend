@@ -136,8 +136,6 @@ class UserViewSet(viewsets.ModelViewSet):
         p, is_created = Person.objects.get_or_create(
                 first_name=request.data["first_name"],
                 last_name=request.data["last_name"],
-                # telephone=request.data["telephone"],
-                # address=request.data["address"],
                 defaults={"nic": request.data["nic"]},
             )
         driver = Driver.objects.create(
