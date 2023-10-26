@@ -143,7 +143,7 @@ WSGI_APPLICATION = 'TrafficTicket.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'myproject',
+        'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'AsithNimeshRavija',
         'HOST': 'trafficticket.cprfebkd2fkc.eu-north-1.rds.amazonaws.com',

@@ -190,7 +190,7 @@ class UserViewSet(viewsets.ModelViewSet):
         print("officer signup")
         print(request.data)
         user = User.objects.create_user(
-            username=request.data["nic"],
+            username=request.data["officer_id"],
             password=request.data["password"],
         )
         group = Group.objects.get(name="officer")
