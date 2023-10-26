@@ -15,6 +15,8 @@ from api.models import (
     Suggestion,
     Schedule,
     VehicleAccident,
+    OfficerLocation,
+    CameraLocation,
     OTPVerification
 )
 
@@ -137,6 +139,16 @@ class VehicleAccidentSerializer(serializers.ModelSerializer):
         model = VehicleAccident
         fields = '__all__'
 
+class OfficerLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OfficerLocation
+        fields = '__all__'
+
+class CameraLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CameraLocation
+        fields = '__all__'
+
 # Custom Serializers ------------------------------------------------------------------
 
 class FineWithViolationAmountSerializer(serializers.ModelSerializer):
@@ -160,19 +172,26 @@ class scheduledOfficersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = ['location','shift','officer_id','full_name','telephone']
-        
+
+
 class DriverDetailsSerializer(serializers.ModelSerializer):
-    nic = serializers.CharField(source='nic.nic.nic')
+    nic = serializers.CharField(source='nic.nic')
     full_name = serializers.SerializerMethodField()
-    telephone = serializers.CharField(source='nic.nic.telephone')
-    vehicle_number = serializers.CharField(source='vehicle_number.vehicle_number')
+    telephone = serializers.CharField(source='nic.telephone')
+    vehicle_number = serializers.SerializerMethodField()
 
     def get_full_name(self, obj):
-        return f"{obj.nic.nic.first_name} {obj.nic.nic.last_name}"
+        return f"{obj.nic.first_name} {obj.nic.last_name}"
+    
+    def get_vehicle_number(self, instance):
+        vehicle_owners = VehicleOwner.objects.filter(nic=instance)
+        vehicles = '\n'.join([va.vehicle_number.vehicle_number for va in vehicle_owners])
+        return vehicles
     
     class Meta:
-        model = VehicleOwner
-        fields = ['nic','full_name','vehicle_number','telephone']
+        model = Driver
+        fields = ['nic', 'full_name','vehicle_number', 'telephone']
+
 
 class OfficerDetailsSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
@@ -213,6 +232,16 @@ class AccidentDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Accident
         fields = ['location','date','time','description','vehicles']
+
+class RecentAccidentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Accident
+        fields = ['index','location','date','time']
+
+class PoliceStationLocationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OfficerLocation
+        fields = ['location']
 
 class OTPVerificationSerializer(serializers.ModelSerializer):
     class Meta:

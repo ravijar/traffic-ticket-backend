@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets,permissions
-from django.contrib.auth.models import  User
+from django.contrib.auth.models import  User,Group
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from api.models import (
@@ -18,32 +18,62 @@ from api.models import (
     Suggestion,
     Schedule,
     VehicleAccident,
-    OTPVerification
+    OTPVerification,
+    CameraLocation,
+    OfficerLocation
 )
 from api.serializers import (
+    
     ViolationTypeSerializer,
+    
     UserSerializer,
+    
     AdminSerializer,
+    
     PersonSerializer,
+    
     DriverSerializer,
+    
     VehicleOwnerSerializer,
+    
     VehicleSerializer,
+    
     FineSerializer,
+    
     AccidentSerializer,
+    
     MessageSerializer,
+    
     PoliceOfficerSerializer,
+    
     ViolationSerializer,
+    
     FineWithViolationAmountSerializer,
-    SuggestionSerializer,ScheduleSerializer, 
+    
+    SuggestionSerializer,
+    ScheduleSerializer, 
+    
     scheduledOfficersSerializer,
+    
     DriverDetailsSerializer,
+    
     OfficerDetailsSerializer,
+    
     FineDetailsSerializer,
+    
     AccidentDetailsSerializer,
+    
     VehicleAccidentSerializer,
-    OTPVerificationSerializer,
+
+    OTPVerificationSerializer
+    ,
+    RecentAccidentsSerializer,
+    OfficerLocationSerializer,
+    CameraLocationSerializer,
+    PoliceStationLocationsSerializer,
     FineIdSerializer
     )
+
 from rest_framework import generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -56,6 +86,9 @@ import string
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.db.models.functions import ExtractMonth,ExtractDay
+from datetime import date,timedelta
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -64,6 +97,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         print(token.__str__())
         # Add custom claims
         token['username'] = user.username
+        token['role'] = user.groups.all()[0].name
         # ...
 
         return token
@@ -92,6 +126,8 @@ class UserViewSet(viewsets.ModelViewSet):
             password=request.data["password"],
             email=request.data["email"],
         )
+        group = Group.objects.get(name="driver")
+        user.groups.add(group)
         user.save()
         p, is_created = Person.objects.get_or_create(
                 first_name=request.data["first_name"],
@@ -157,6 +193,8 @@ class UserViewSet(viewsets.ModelViewSet):
             username=request.data["nic"],
             password=request.data["password"],
         )
+        group = Group.objects.get(name="officer")
+        user.groups.add(group)
         user.save()
         p, is_created = Person.objects.get_or_create(
                 first_name=request.data["first_name"],
@@ -314,8 +352,12 @@ class DriverViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Driver.objects.all()
-    serializer_class = DriverSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return DriverDetailsSerializer
+        return DriverSerializer
 
 
 class VehicleOwnerViewSet(viewsets.ModelViewSet):
@@ -324,12 +366,8 @@ class VehicleOwnerViewSet(viewsets.ModelViewSet):
     """
 
     queryset = VehicleOwner.objects.all()
+    serializer_class = VehicleOwnerSerializer
     permission_classes = [permissions.AllowAny]
-
-    def get_serializer_class(self):
-        if self.action == "list":
-            return DriverDetailsSerializer
-        return VehicleOwnerSerializer
 
 
 class VehicleViewSet(viewsets.ModelViewSet):
@@ -391,6 +429,39 @@ class AccidentViewSet(viewsets.ModelViewSet):
             return AccidentDetailsSerializer
         return AccidentSerializer
 
+    @action(detail=False,methods=["GET"])
+    def get_recent_accidents(self, request, *args, **kwargs):
+        queryset = Accident.objects.all().order_by('-index')[:6]
+        serializer = RecentAccidentsSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False,methods=["GET"])
+    def get_monthly_count(self, request, *args, **kwargs):
+        current_year = date.today().year
+        queryset = Accident.objects.filter(date__year=current_year).annotate(month=ExtractMonth('date')).values('month').annotate(count=Count('index')).values('month', 'count')
+        monthly_count = [0]*12
+        for data in queryset:
+            monthly_count[data['month']-1] = data['count']  
+        print(queryset)
+        return Response(monthly_count)
+
+    @action(detail=False,methods=["GET"])
+    def get_weekly_count(self, request, *args, **kwargs):
+        today = date.today()
+        weekday = today.weekday()
+        start_of_week = today - timedelta(days=weekday)
+        end_of_week = start_of_week + timedelta(days=6)
+        queryset = Accident.objects.filter(date__range=[start_of_week, end_of_week]).annotate(day=ExtractDay('date')).values('day').annotate(count=Count('index')).values('day', 'count')
+        weekly_count = [0]*7
+        for data in queryset:
+            weekly_count[data['day']-start_of_week.day] = data['count']
+        return Response(weekly_count)
+    
+    @action(detail=False,methods=["GET"])
+    def get_reported_accident_count(self,request,*args,**kwargs):
+        today = date.today()
+        queryset = Accident.objects.filter(date=today)
+        return Response(queryset.count())
 
 class MessageViewSet(viewsets.ModelViewSet):
     """
@@ -516,6 +587,13 @@ class ScheduleViewSet(viewsets.ModelViewSet):
         )
         schedule.save()
         return Response({"status": "schedule created"}, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=["GET"])
+    def get_scheduled_officers(self, request, *args, **kwargs):
+        date = request.GET.get('date')
+        queryset = Schedule.objects.filter(date=date)
+        serializer = scheduledOfficersSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
@@ -535,20 +613,28 @@ class FineList(generics.ListAPIView):
             queryset = Fine.objects.none()
 
         return queryset
-
-class ScheduledOfficerList(generics.ListAPIView):
-    serializer_class = scheduledOfficersSerializer
-
-    def get_queryset(self):
-        date = self.kwargs.get('date')  # Retrieve the date from the URL
-        queryset = Schedule.objects.filter(date=date)
-        return queryset
     
 class VehicleAccidentViewSet(viewsets.ModelViewSet):
     queryset = VehicleAccident.objects.all()
     serializer_class = VehicleAccidentSerializer
     permission_classes = [permissions.AllowAny]
 
+class OfficerLocationViewSet(viewsets.ModelViewSet):
+    queryset = OfficerLocation.objects.all()
+    serializer_class = OfficerLocationSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=["GET"])
+    def get_police_station_locations(self, request, *args, **kwargs):
+        police_station = request.GET.get('police_station')
+        queryset = OfficerLocation.objects.filter(police_station=police_station)
+        serializer = PoliceStationLocationsSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+class CameraLocationViewSet(viewsets.ModelViewSet):
+    queryset = CameraLocation.objects.all()
+    serializer_class = CameraLocationSerializer
+    permission_classes = [permissions.AllowAny]
     
 
 class OTPVerificationViewSet(viewsets.ModelViewSet):

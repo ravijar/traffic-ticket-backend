@@ -40,6 +40,8 @@ router.register(r"schedules", views.ScheduleViewSet)
 router.register(r"fines", views.FineViewSet)
 router.register(r"vehicleaccidents", views.VehicleAccidentViewSet)
 router.register(r"otpverifications", views.OTPVerificationViewSet)
+router.register(r"officerlocations", views.OfficerLocationViewSet)
+router.register(r"camerlocations", views.CameraLocationViewSet)
 
 
 
@@ -48,7 +50,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/',include(router.urls)),
     path('api/driverfine/', views.FineList.as_view(), name='fine-list'),
-    path('api/scheduledOfficers/<str:date>', views.ScheduledOfficerList.as_view(), name='schedule-list'),
     path('api/driverfine/<str:driver_id>/', views.FineList.as_view(), name='filtered-fine-list'),
     path("api/rest-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path('api/token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
