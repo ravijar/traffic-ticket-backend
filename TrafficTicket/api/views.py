@@ -71,7 +71,8 @@ from api.serializers import (
     OfficerLocationSerializer,
     CameraLocationSerializer,
     PoliceStationLocationsSerializer,
-    FineIdSerializer
+    FineIdSerializer,
+    VehicleDetailsSerializer
     )
 
 from rest_framework import generics
@@ -376,8 +377,12 @@ class VehicleViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Vehicle.objects.all()
-    serializer_class = VehicleSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return VehicleDetailsSerializer
+        return VehicleSerializer
 
 
 class FineViewSet(viewsets.ModelViewSet):
