@@ -26,9 +26,9 @@ SECRET_KEY = 'django-insecure-z&b(-2ht$m25j+np%j%zh4o^20!%sc(!=!9gt#jhfx=c!xa_*h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*.ngrok.io', '8f32-112-134-194-1.ngrok.io', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['192.168.184.52','localhost','192.168.0.186','127.0.0.1','10.10.23.243']
 
-
+CORS_ALLOW_ALL_ORIGINS = True 
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api.apps.ApiConfig',
     'rest_framework',
+    'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 ]
@@ -128,17 +129,28 @@ WSGI_APPLICATION = 'TrafficTicket.wsgi.application'
 
     
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'PASSWORD': '12345678',
+#         'HOST': 'trafficticket.cprfebkd2fkc.eu-north-1.rds.amazonaws.com',
+#         'PORT': '5432'
+        
+#     }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': 'myproject',
         'USER': 'postgres',
         'PASSWORD': 'AsithNimeshRavija',
         'HOST': 'trafficticket.cprfebkd2fkc.eu-north-1.rds.amazonaws.com',
         'PORT': '5432'
+
     }
 }
-
 
 # Django email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
