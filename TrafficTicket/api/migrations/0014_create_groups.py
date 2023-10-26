@@ -67,10 +67,10 @@ def create_groups(apps, schema_editor):
     admin_permissions = {
         Accident: ['view_accident'],
         Admin: ['view_admin'],
-        CameraLocation: ['view_cameralocation','add_cameralocation'],
+        #CameraLocation: ['view_cameralocation','add_cameralocation'],
         Driver: ['view_driver'],
         Fine: ['view_fine'],
-        OfficerLocation: ['view_officerlocation','add_officerlocation'],
+        #OfficerLocation: ['view_officerlocation','add_officerlocation'],
         Person: ['view_person','add_person'],
         PoliceOfficer: ['view_policeofficer','add_policeofficer'],
         Schedule: ['view_schedule','add_schedule'],
