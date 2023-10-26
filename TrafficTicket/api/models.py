@@ -3,8 +3,6 @@ from django.contrib.auth.models import User
 
 #done
 class Admin(models.Model):
-    # user_id = models.CharField(max_length=12, primary_key=True)
-    # password = models.CharField(max_length=128)  
     police_station = models.CharField(max_length=20)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
@@ -38,7 +36,6 @@ class Fine(models.Model):
 #driver
 class Driver(models.Model):
     nic = models.OneToOneField('Person', primary_key=True, on_delete=models.CASCADE)
-    # password = models.CharField(max_length=128)  
     license_id = models.CharField(max_length=8)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
@@ -72,7 +69,6 @@ class Message(models.Model):
 #done
 class PoliceOfficer(models.Model):
     nic = models.OneToOneField('Person', primary_key=True, on_delete=models.CASCADE)
-    # password = models.CharField(max_length=128)  
     police_station = models.CharField(max_length=20)
     officer_id = models.CharField(max_length=10, null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
@@ -121,3 +117,10 @@ class OTPVerification(models.Model):
     nic = models.CharField(max_length=12)
     otp = models.CharField(max_length=6)
     timestamp = models.DateTimeField(auto_now_add=True)
+class OfficerLocation(models.Model):
+    police_station = models.CharField(max_length=20)
+    location = models.CharField(max_length=50)
+
+class CameraLocation(models.Model):
+    police_station = models.CharField(max_length=20)
+    location = models.CharField(max_length=50)
