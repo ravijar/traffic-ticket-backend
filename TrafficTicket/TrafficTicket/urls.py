@@ -30,6 +30,7 @@ router.register(r"persons", views.PersonViewSet)
 router.register(r"drivers", views.DriverViewSet)
 router.register(r"vehicleowners", views.VehicleOwnerViewSet)
 router.register(r"vehicles", views.VehicleViewSet)
+router.register(r"fines", views.FineViewSet)
 router.register(r"accidents", views.AccidentViewSet)
 router.register(r"messages", views.MessageViewSet)
 router.register(r"policeofficers", views.PoliceOfficerViewSet)
@@ -55,4 +56,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/send_otp/', views.UserViewSet.as_view({'post': 'send_otp'}), name='send-otp'),
     path('api/verify_otp/', views.UserViewSet.as_view({'post': 'verify_otp'}), name='verify-otp'),
+    path('api/finebyid/<str:driver_id>/', views.FineByIdViewSet.as_view({'get':'list'}), name='fine-by-driver'),
+    
+
 ]
