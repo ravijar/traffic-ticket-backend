@@ -16,7 +16,8 @@ from api.models import (
     Schedule,
     VehicleAccident,
     OfficerLocation,
-    CameraLocation
+    CameraLocation,
+    OTPVerification
 )
 
 # Generic Serializers ------------------------------------------------------------------
@@ -210,3 +211,8 @@ class PoliceStationLocationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfficerLocation
         fields = ['location']
+
+class OTPVerificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OTPVerification
+        fields = '__all__'

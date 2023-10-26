@@ -38,6 +38,7 @@ router.register(r"suggestions", views.SuggestionViewSet)
 router.register(r"schedules", views.ScheduleViewSet)
 router.register(r"fines", views.FineViewSet)
 router.register(r"vehicleaccidents", views.VehicleAccidentViewSet)
+router.register(r"otpverifications", views.OTPVerificationViewSet)
 router.register(r"officerlocations", views.OfficerLocationViewSet)
 router.register(r"camerlocations", views.CameraLocationViewSet)
 
@@ -51,5 +52,7 @@ urlpatterns = [
     path('api/driverfine/<str:driver_id>/', views.FineList.as_view(), name='filtered-fine-list'),
     path("api/rest-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path('api/token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh')
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/send_otp/', views.UserViewSet.as_view({'post': 'send_otp'}), name='send-otp'),
+    path('api/verify_otp/', views.UserViewSet.as_view({'post': 'verify_otp'}), name='verify-otp'),
 ]
