@@ -14,17 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
 from rest_framework import routers
 from api import views
-from rest_framework_simplejwt.views import (
-    TokenRefreshView,
-    TokenObtainPairView
-)
+from rest_framework_simplejwt.views import TokenRefreshView
+
 
 router = routers.DefaultRouter()
+# viewset urls
 router.register(r"users", views.UserViewSet)
-router.register(r"violationtypes", views.ViolationTypeViewSet)  
+router.register(r"violationtypes", views.ViolationTypeViewSet)
 router.register(r"admins", views.AdminViewSet)
 router.register(r"persons", views.PersonViewSet)
 router.register(r"drivers", views.DriverViewSet)
@@ -44,19 +43,21 @@ router.register(r"officerlocations", views.OfficerLocationViewSet)
 router.register(r"camerlocations", views.CameraLocationViewSet)
 
 
-
-
+# custom urls
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/',include(router.urls)),
+    path('api/', include(router.urls)),
     path('api/driverfine/', views.FineList.as_view(), name='fine-list'),
-    path('api/driverfine/<str:driver_id>/', views.FineList.as_view(), name='filtered-fine-list'),
+    path('api/driverfine/<str:driver_id>/',
+         views.FineList.as_view(), name='filtered-fine-list'),
     path("api/rest-auth/", include("rest_framework.urls", namespace="rest_framework")),
-    path('api/token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/', views.MyTokenObtainPairView.as_view(),
+         name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/send_otp/', views.UserViewSet.as_view({'post': 'send_otp'}), name='send-otp'),
-    path('api/verify_otp/', views.UserViewSet.as_view({'post': 'verify_otp'}), name='verify-otp'),
-    path('api/finebyid/<str:driver_id>/', views.FineByIdViewSet.as_view({'get':'list'}), name='fine-by-driver'),
-    
-
+    path('api/send_otp/',
+         views.UserViewSet.as_view({'post': 'send_otp'}), name='send-otp'),
+    path('api/verify_otp/',
+         views.UserViewSet.as_view({'post': 'verify_otp'}), name='verify-otp'),
+    path('api/finebyid/<str:driver_id>/',
+         views.FineByIdViewSet.as_view({'get': 'list'}), name='fine-by-driver'),
 ]

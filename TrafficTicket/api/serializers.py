@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from api.models import (
     Admin,
     Person,
@@ -258,3 +259,21 @@ class FineIdSerializer(serializers.ModelSerializer):
         model = Fine
         fields = ('fine_id', 'date', 'violation_type',
                   'location', 'payment_status')
+
+
+# custom token serializer
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        print("get token", user.username)
+        token = super().get_token(user)
+        print(token.__str__())
+        # custom fields
+        token['username'] = user.username
+        token['role'] = user.groups.all()[0].name
+        # taking the police station of the admins
+        if (user.groups.all()[0].name == "admin"):
+            police_station = Admin.objects.get(user=user).police_station
+            token['police_station'] = police_station
+
+        return token
