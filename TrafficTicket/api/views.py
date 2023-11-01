@@ -1,12 +1,11 @@
 from django.shortcuts import render
-from rest_framework import viewsets,permissions
-from django.contrib.auth.models import  User,Group
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import viewsets, permissions
+from django.contrib.auth.models import User, Group
 from rest_framework_simplejwt.views import TokenObtainPairView
 from api.models import (
     Admin,
     Person,
-    Driver, 
+    Driver,
     VehicleOwner,
     Vehicle,
     Fine,
@@ -23,57 +22,36 @@ from api.models import (
     OfficerLocation
 )
 from api.serializers import (
-    
     ViolationTypeSerializer,
-    
     UserSerializer,
-    
     AdminSerializer,
-    
     PersonSerializer,
-    
     DriverSerializer,
-    
     VehicleOwnerSerializer,
-    
     VehicleSerializer,
-    
     FineSerializer,
-    
     AccidentSerializer,
-    
     MessageSerializer,
-    
     PoliceOfficerSerializer,
-    
     ViolationSerializer,
-    
     FineWithViolationAmountSerializer,
-    
     SuggestionSerializer,
-    ScheduleSerializer, 
-    
+    ScheduleSerializer,
     scheduledOfficersSerializer,
-    
     DriverDetailsSerializer,
-    
     OfficerDetailsSerializer,
-    
     FineDetailsSerializer,
-    
     AccidentDetailsSerializer,
-    
     VehicleAccidentSerializer,
-
-    OTPVerificationSerializer
-    ,
+    OTPVerificationSerializer,
     RecentAccidentsSerializer,
     OfficerLocationSerializer,
     CameraLocationSerializer,
     PoliceStationLocationsSerializer,
     FineIdSerializer,
-    VehicleDetailsSerializer
-    )
+    VehicleDetailsSerializer,
+    MyTokenObtainPairSerializer
+)
 
 from rest_framework import generics
 from rest_framework.decorators import action
@@ -87,28 +65,14 @@ import string
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 from django.utils import timezone
-from django.db.models.functions import ExtractMonth,ExtractDay
-from datetime import date,timedelta
-
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        print("get token", user.username)
-        token = super().get_token(user)
-        print(token.__str__())
-        # Add custom claims
-        token['username'] = user.username
-        token['role'] = user.groups.all()[0].name
-        # ...
-        if(user.groups.all()[0].name == "admin"):
-            police_station = Admin.objects.get(user=user).police_station
-            token['police_station'] = police_station
-
-        return token
+from django.db.models.functions import ExtractMonth, ExtractDay
+from datetime import date, timedelta
 
 
+# jwt token view
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -119,12 +83,13 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
 
+    # driver mobile driver signup
     @action(detail=False, methods=["post"])
     def driver_signup(self, request):
         """Register a new user.
             api [POST] /api/users/driver_signup/]
             required ['password', 'email', 'first_name', 'last_name', 'nic', 'license_id']]"""
-        
+
         user = User.objects.create_user(
             username=request.data["nic"],
             password=request.data["password"],
@@ -134,10 +99,10 @@ class UserViewSet(viewsets.ModelViewSet):
         user.groups.add(group)
         user.save()
         p, is_created = Person.objects.get_or_create(
-                first_name=request.data["first_name"],
-                last_name=request.data["last_name"],
-                defaults={"nic": request.data["nic"]},
-            )
+            first_name=request.data["first_name"],
+            last_name=request.data["last_name"],
+            defaults={"nic": request.data["nic"]},
+        )
         driver = Driver.objects.create(
             nic=p,
             license_id=request.data["license_id"],
@@ -146,7 +111,7 @@ class UserViewSet(viewsets.ModelViewSet):
         driver.save()
         return Response({"status": "driver created"}, status=status.HTTP_201_CREATED)
 
-
+    # driver/officer mobile change password
     @action(detail=False, methods=["put"])
     def change_password(self, request):
         """
@@ -183,7 +148,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 {"error": "Old password is incorrect."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
+    # admin web officer signup
     @action(detail=False, methods=["post"])
     def officer_signup(self, request):
         """Register a new user.
@@ -199,12 +165,12 @@ class UserViewSet(viewsets.ModelViewSet):
         user.groups.add(group)
         user.save()
         p, is_created = Person.objects.get_or_create(
-                first_name=request.data["first_name"],
-                last_name=request.data["last_name"],
-                telephone=request.data["telephone"],
-                address="",
-                defaults={"nic": request.data["nic"]},
-            )
+            first_name=request.data["first_name"],
+            last_name=request.data["last_name"],
+            telephone=request.data["telephone"],
+            address="",
+            defaults={"nic": request.data["nic"]},
+        )
         officer = PoliceOfficer.objects.create(
             nic=p,
             police_station=request.data["police_station"],
@@ -213,8 +179,8 @@ class UserViewSet(viewsets.ModelViewSet):
         )
         officer.save()
         return Response({"status": "officer created"}, status=status.HTTP_201_CREATED)
-    
 
+    # driver/officer mobile send otp
     @action(detail=False, methods=["post"])
     def send_otp(self, request):
         """
@@ -225,20 +191,18 @@ class UserViewSet(viewsets.ModelViewSet):
         nic = request.data.get("nic")
 
         try:
-            user = User.objects.get(username=nic)   
-            
+            user = User.objects.get(username=nic)
+
         except User.DoesNotExist:
             return Response({"error": "User not found."},  status=status.HTTP_404_NOT_FOUND)
 
-
         # Check if an OTPVerification entry with the same `nic` already exists
-        otp_verification, created = OTPVerification.objects.get_or_create(nic=nic)
+        otp_verification, created = OTPVerification.objects.get_or_create(
+            nic=nic)
         otp = ''.join(random.choices(string.digits, k=6))
-        
-       
+
         otp_verification.otp = otp
         otp_verification.save()
-        
 
         totp = TOTP(otp)
         otp_url = totp.provisioning_uri(user.email, issuer_name="YourApp")
@@ -248,10 +212,12 @@ class UserViewSet(viewsets.ModelViewSet):
         from_email = "trafficticketse18@gmail.com"  # Update with your email
         recipient_list = [user.email]
 
-        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+        send_mail(subject, message, from_email,
+                  recipient_list, fail_silently=False)
 
         return Response({"status": "OTP sent successfully."}, status=status.HTTP_200_OK)
 
+    # driver/officer mobile verify otp
     @action(detail=False, methods=["post"])
     def verify_otp(self, request):
         """
@@ -261,7 +227,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         nic = request.data.get("nic")
         entered_otp = request.data.get("entered_otp")
-        
+
         try:
             user = User.objects.get(username=nic)
         except User.DoesNotExist:
@@ -271,16 +237,13 @@ class UserViewSet(viewsets.ModelViewSet):
             otp_verification = OTPVerification.objects.get(nic=nic)
         except OTPVerification.DoesNotExist:
             return Response({"error": "OTP not found for the user."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         stored_otp = otp_verification.otp
 
-        
-        
         if (stored_otp == entered_otp):
             return Response({"status": "OTP is valid."}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
-
 
     @action(detail=False, methods=["put"])
     def update_password(self, request):
@@ -306,21 +269,16 @@ class UserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        
         user.set_password(new_password)
         user.save()
-            # Update the session to avoid having to re-login
+        # Update the session to avoid having to re-login
 
         return Response({"status": "password changed"}, status=status.HTTP_200_OK)
-        
-        
-
-    
 
 
 class ViolationTypeViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows violation types to be viewed or edited.
     """
 
     queryset = ViolationType.objects.all()
@@ -330,7 +288,7 @@ class ViolationTypeViewSet(viewsets.ModelViewSet):
 
 class AdminViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows admins to be viewed or edited.
     """
 
     queryset = Admin.objects.all()
@@ -340,7 +298,7 @@ class AdminViewSet(viewsets.ModelViewSet):
 
 class PersonViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows persons to be viewed or edited.
     """
 
     queryset = Person.objects.all()
@@ -350,7 +308,7 @@ class PersonViewSet(viewsets.ModelViewSet):
 
 class DriverViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows drivers to be viewed or edited.
     """
 
     queryset = Driver.objects.all()
@@ -364,7 +322,7 @@ class DriverViewSet(viewsets.ModelViewSet):
 
 class VehicleOwnerViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows vehicle owners to be viewed or edited.
     """
 
     queryset = VehicleOwner.objects.all()
@@ -374,7 +332,7 @@ class VehicleOwnerViewSet(viewsets.ModelViewSet):
 
 class VehicleViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows vehicles to be viewed or edited.
     """
 
     queryset = Vehicle.objects.all()
@@ -388,35 +346,36 @@ class VehicleViewSet(viewsets.ModelViewSet):
 
 class FineViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows fines to be viewed or edited.
     """
 
     queryset = Fine.objects.all()
     permission_classes = [permissions.AllowAny]
-    
+
     def get_serializer_class(self):
         if self.action == "list":
             return FineDetailsSerializer
         return FineSerializer
 
+
 class FineByIdViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows a fine to be viewed or edited.
     """
-    # driver_id = "992771330V"  # Change this to the desired driver's ID
 
     serializer_class = FineIdSerializer
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         driver_id = self.kwargs['driver_id']
-        driver = Driver.objects.get(nic=driver_id)  # Modify this line to match your Driver model's field.
+        driver = Driver.objects.get(nic=driver_id)
         queryset = Fine.objects.filter(driver=driver)
         return queryset
 
+
 class AccidentViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows accidents to be viewed or edited.
     """
 
     queryset = Accident.objects.all()
@@ -427,43 +386,50 @@ class AccidentViewSet(viewsets.ModelViewSet):
             return AccidentDetailsSerializer
         return AccidentSerializer
 
-    @action(detail=False,methods=["GET"])
+    # admin web recent accidents
+    @action(detail=False, methods=["GET"])
     def get_recent_accidents(self, request, *args, **kwargs):
         queryset = Accident.objects.all().order_by('-index')[:6]
         serializer = RecentAccidentsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    @action(detail=False,methods=["GET"])
+    # admin web monthly accident count
+    @action(detail=False, methods=["GET"])
     def get_monthly_count(self, request, *args, **kwargs):
         current_year = date.today().year
-        queryset = Accident.objects.filter(date__year=current_year).annotate(month=ExtractMonth('date')).values('month').annotate(count=Count('index')).values('month', 'count')
+        queryset = Accident.objects.filter(date__year=current_year).annotate(month=ExtractMonth(
+            'date')).values('month').annotate(count=Count('index')).values('month', 'count')
         monthly_count = [0]*12
         for data in queryset:
-            monthly_count[data['month']-1] = data['count']  
+            monthly_count[data['month']-1] = data['count']
         print(queryset)
         return Response(monthly_count)
 
-    @action(detail=False,methods=["GET"])
+    # admin web weekly accident count
+    @action(detail=False, methods=["GET"])
     def get_weekly_count(self, request, *args, **kwargs):
         today = date.today()
         weekday = today.weekday()
         start_of_week = today - timedelta(days=weekday)
         end_of_week = start_of_week + timedelta(days=6)
-        queryset = Accident.objects.filter(date__range=[start_of_week, end_of_week]).annotate(day=ExtractDay('date')).values('day').annotate(count=Count('index')).values('day', 'count')
+        queryset = Accident.objects.filter(date__range=[start_of_week, end_of_week]).annotate(
+            day=ExtractDay('date')).values('day').annotate(count=Count('index')).values('day', 'count')
         weekly_count = [0]*7
         for data in queryset:
             weekly_count[data['day']-start_of_week.day] = data['count']
         return Response(weekly_count)
-    
-    @action(detail=False,methods=["GET"])
-    def get_reported_accident_count(self,request,*args,**kwargs):
+
+    # admin web reported accident count
+    @action(detail=False, methods=["GET"])
+    def get_reported_accident_count(self, request, *args, **kwargs):
         today = date.today()
         queryset = Accident.objects.filter(date=today)
         return Response(queryset.count())
 
+
 class MessageViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows messages to be viewed or edited.
     """
 
     queryset = Message.objects.all()
@@ -472,18 +438,15 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-
         # Create a list to hold the serialized data for each message
         data = []
 
         for message in queryset:
-            
             # Get the sender's police officer information based on sender_nic
             try:
-                # police_officer = PoliceOfficer.objects.get(officer_id=message.sender_nic)
-                # sender_id = police_officer.officer_id
                 sender_id = message.sender_nic
-                police_officer = PoliceOfficer.objects.get(officer_id=sender_id)
+                police_officer = PoliceOfficer.objects.get(
+                    officer_id=sender_id)
 
                 police_station = police_officer.police_station
             except PoliceOfficer.DoesNotExist:
@@ -501,27 +464,10 @@ class MessageViewSet(viewsets.ModelViewSet):
 
         return Response(data, status=status.HTTP_200_OK)
 
-# class CustomMessageListView(generics.ListAPIView):
-#     serializer_class = MessageSerializer
-
-#     def get_queryset(self):
-#         # Retrieve messages along with sender's officer_id and police_station
-#         queryset = Message.objects.all()
-#         queryset = queryset.values(
-#             'body',
-#             sender_nic=F('sender__policeofficer__officer_id'),
-#             police_station=F('sender__policeofficer__police_station')
-#         )
-#         return queryset
-
-#     def list(self, request, *args, **kwargs):
-#         queryset = self.get_queryset()
-#         serializer = self.get_serializer(queryset, many=True)
-#         return Response(serializer.data)
 
 class PoliceOfficerViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows officers to be viewed or edited.
     """
 
     queryset = PoliceOfficer.objects.all()
@@ -535,7 +481,7 @@ class PoliceOfficerViewSet(viewsets.ModelViewSet):
 
 class ViolationViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows violations to be viewed or edited.
     """
 
     queryset = Violation.objects.all()
@@ -544,23 +490,27 @@ class ViolationViewSet(viewsets.ModelViewSet):
 
 # new
 
+
 class SuggestionViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows suggestions to be viewed or edited.
     """
 
     queryset = Suggestion.objects.all()
     serializer_class = SuggestionSerializer
     permission_classes = [permissions.AllowAny]
 
+
 class ScheduleViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows schedules to be viewed or edited.
     """
+
     queryset = Schedule.objects.all()
     serializer_class = ScheduleSerializer
     permission_classes = [permissions.AllowAny]
 
+    # admin web create schedule
     @action(detail=False, methods=["post"])
     def create_schedule(self, request):
         """Create a new schedule.
@@ -570,7 +520,8 @@ class ScheduleViewSet(viewsets.ModelViewSet):
         print(request.data["date"])
 
         try:
-            officer = PoliceOfficer.objects.get(officer_id=request.data["officer_id"])
+            officer = PoliceOfficer.objects.get(
+                officer_id=request.data["officer_id"])
         except:
             return Response(
                 {"error": "Officer not found."},
@@ -578,27 +529,78 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             )
 
         schedule = Schedule.objects.create(
-            officer = officer,
-            location = request.data["location"],
-            shift = request.data["shift"],
-            date = request.data["date"],
-            police_station = request.data["police_station"],
+            officer=officer,
+            location=request.data["location"],
+            shift=request.data["shift"],
+            date=request.data["date"],
+            police_station=request.data["police_station"],
         )
         schedule.save()
         return Response({"status": "schedule created"}, status=status.HTTP_201_CREATED)
-    
+
+    # admin web get scheduled officers
     @action(detail=False, methods=["GET"])
     def get_scheduled_officers(self, request, *args, **kwargs):
         date = request.GET.get('date')
         policeStation = request.GET.get('police_station')
-        queryset = Schedule.objects.filter(date=date, police_station=policeStation)
+        queryset = Schedule.objects.filter(
+            date=date, police_station=policeStation)
         serializer = scheduledOfficersSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class VehicleAccidentViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows vehicle accidents to be viewed or edited.
+    """
+
+    queryset = VehicleAccident.objects.all()
+    serializer_class = VehicleAccidentSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class OfficerLocationViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows officer locations to be viewed or edited.
+    """
+
+    queryset = OfficerLocation.objects.all()
+    serializer_class = OfficerLocationSerializer
+    permission_classes = [permissions.AllowAny]
+
+    # admin web get locations related to police station
+    @action(detail=False, methods=["GET"])
+    def get_police_station_locations(self, request, *args, **kwargs):
+        police_station = request.GET.get('police_station')
+        queryset = OfficerLocation.objects.filter(
+            police_station=police_station)
+        serializer = PoliceStationLocationsSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class CameraLocationViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows camera locations to be viewed or edited.
+    """
+
+    queryset = CameraLocation.objects.all()
+    serializer_class = CameraLocationSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class OTPVerificationViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+
+    queryset = OTPVerification.objects.all()
+    serializer_class = OTPVerificationSerializer
+    permission_classes = [permissions.AllowAny]
+
 
 class FineList(generics.ListAPIView):
     queryset = Fine.objects.all()
     serializer_class = FineWithViolationAmountSerializer
-
 
     def get_queryset(self):
         # Get the driver_id from the request query parameters
@@ -613,35 +615,3 @@ class FineList(generics.ListAPIView):
             queryset = Fine.objects.none()
 
         return queryset
-    
-class VehicleAccidentViewSet(viewsets.ModelViewSet):
-    queryset = VehicleAccident.objects.all()
-    serializer_class = VehicleAccidentSerializer
-    permission_classes = [permissions.AllowAny]
-
-class OfficerLocationViewSet(viewsets.ModelViewSet):
-    queryset = OfficerLocation.objects.all()
-    serializer_class = OfficerLocationSerializer
-    permission_classes = [permissions.AllowAny]
-
-    @action(detail=False, methods=["GET"])
-    def get_police_station_locations(self, request, *args, **kwargs):
-        police_station = request.GET.get('police_station')
-        queryset = OfficerLocation.objects.filter(police_station=police_station)
-        serializer = PoliceStationLocationsSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-class CameraLocationViewSet(viewsets.ModelViewSet):
-    queryset = CameraLocation.objects.all()
-    serializer_class = CameraLocationSerializer
-    permission_classes = [permissions.AllowAny]
-    
-
-class OTPVerificationViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-
-    queryset = OTPVerification.objects.all()
-    serializer_class = OTPVerificationSerializer
-    permission_classes = [permissions.AllowAny]
